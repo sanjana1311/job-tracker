@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <link rel="icon" href="data:," />
+  <title>Public Job Tracker</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap');
+
+    :root {
+      --ink: #18211f;
+      --muted: #66716d;
+      --paper: #f4f5f1;
+      --surface: #ffffff;
+      --surface-2: #e9ece6;
+      --line: #d9ded7;
+      --deep: #172623;
+      --deep-2: #243632;
+      --teal: #0a776c;
+      --teal-soft: #d9eee9;
+      --teal-bright: #67d5c5;
+      --coral: #c95f49;
+      --coral-soft: #f6e2dc;
+      --gold: #a36d0b;
+      --gold-soft: #f4ead2;
+      --blue: #396b8f;
+      --blue-soft: #dfeaf1;
+      --shadow: 0 18px 50px rgba(19, 35, 31, .08);
+      --r-sm: 10px;
+      --r-md: 16px;
+      --r-lg: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { min-width: 320px; background: var(--paper); }
+    body { margin: 0; min-height: 100vh; color: var(--ink); background: var(--paper); font-family: "DM Sans", sans-serif; -webkit-font-smoothing: antialiased; }
+    button, input, select, textarea { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: inherit; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    .icon { width: 19px; height: 19px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    .app-shell { min-height: 100vh; display: grid; grid-template-columns: 236px minmax(0, 1fr); }
+    .sidebar { position: sticky; top: 0; height: 100vh; padding: 28px 18px 22px; background: var(--deep); color: #eef5f2; display: flex; flex-direction: column; z-index: 10; }
+    .sidebar-intro { padding: 0 12px 26px; }
+    .sidebar-intro strong { display: block; font-family: "Newsreader", serif; font-size: 23px; font-weight: 600; letter-spacing: -.02em; }
+    .sidebar-intro span { display: block; margin-top: 5px; color: #a8b9b4; font-size: 12px; }
+    .nav { display: grid; gap: 6px; }
+    .nav-btn { width: 100%; border: 0; background: transparent; color: #b8c7c3; display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 10px; cursor: pointer; text-align: left; font-weight: 600; font-size: 14px; }
+    .nav-btn:hover { background: rgba(255,255,255,.06); color: white; }
+    .nav-btn.active { background: var(--teal-bright); color: #10221f; }
+    .nav-count { margin-left: auto; min-width: 24px; padding: 2px 7px; border-radius: 999px; background: rgba(255,255,255,.1); text-align: center; font-size: 11px; }
+    .nav-btn.active .nav-count { background: rgba(16,34,31,.12); }
+    .side-note { margin-top: auto; padding: 16px; border-top: 1px solid rgba(255,255,255,.12); color: #a8b9b4; font-size: 12px; line-height: 1.5; }
+    .side-note strong { color: #eef5f2; }
+
+    .main { min-width: 0; padding: 26px clamp(22px, 4vw, 58px) 56px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 34px; }
+    .session-note { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 13px; }
+    .session-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 4px var(--gold-soft); }
+    .top-actions { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .btn { min-height: 42px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); padding: 0 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-weight: 700; font-size: 13px; text-decoration: none; white-space: nowrap; }
+    .btn:hover { border-color: #aeb8b2; background: #fbfcfa; }
+    .btn.primary { background: var(--teal); border-color: var(--teal); color: white; }
+    .btn.primary:hover { background: #08665d; }
+    .btn.dark { background: var(--deep); border-color: var(--deep); color: white; }
+    .btn.ghost { background: transparent; }
+    .btn.danger { color: #9d3d2d; border-color: #e9c8c0; background: #fff8f6; }
+    .btn.small { min-height: 34px; padding: 0 11px; font-size: 12px; }
+    .btn.icon-only { width: 38px; padding: 0; }
+    .file-input { display: none; }
+
+    .view { display: none; }
+    .view.active { display: block; }
+    .view-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 22px; margin-bottom: 24px; }
+    .view-heading h1 { margin: 0; font-family: "Newsreader", serif; font-size: clamp(34px, 4vw, 52px); line-height: .98; font-weight: 600; letter-spacing: -.035em; max-width: 690px; }
+    .view-heading p { margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .view-heading .btn { flex: 0 0 auto; }
+
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; margin-bottom: 22px; }
+    .stat { min-height: 120px; padding: 19px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); }
+    .stat-label { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .stat-value { margin-top: 12px; font-family: "Newsreader", serif; font-size: 37px; line-height: 1; font-weight: 600; }
+    .stat-foot { margin-top: 9px; color: var(--muted); font-size: 12px; }
+
+    .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(260px, .8fr); gap: 16px; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+    .panel-header { padding: 21px 22px 15px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .panel-header h2 { margin: 0; font-family: "Newsreader", serif; font-size: 22px; font-weight: 600; }
+    .panel-header p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 4px 22px 22px; }
+    .attention-list { display: grid; gap: 9px; }
+    .attention { display: grid; grid-template-columns: 34px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 13px 0; border-top: 1px solid var(--line); }
+    .attention-icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--surface-2); color: var(--teal); }
+    .attention strong { display: block; font-size: 13px; }
+    .attention span { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .mini-action { border: 0; background: transparent; color: var(--teal); font-size: 12px; font-weight: 700; cursor: pointer; padding: 6px; }
+    .empty { text-align: center; padding: 34px 18px 30px; }
+    .empty-mark { width: 52px; height: 52px; margin: 0 auto 16px; display: grid; place-items: center; border-radius: 18px 18px 18px 5px; background: var(--teal-soft); color: var(--teal); }
+    .empty h3 { margin: 0 0 7px; font-size: 15px; }
+    .empty p { max-width: 390px; margin: 0 auto 17px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+    .pipeline { display: grid; gap: 13px; }
+    .pipeline-row { display: grid; grid-template-columns: 76px minmax(0,1fr) 26px; gap: 10px; align-items: center; font-size: 12px; }
+    .pipeline-row > span:last-child { text-align: right; font-weight: 700; }
+    .bar-track { height: 9px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+    .bar { height: 100%; min-width: 0; border-radius: inherit; background: var(--teal); transition: width .3s ease; }
+
+    .tool-row { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+    .search { flex: 1; position: relative; min-width: 160px; }
+    .search .icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+    input, select, textarea { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: white; color: var(--ink); padding: 11px 12px; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(10,119,108,.11); }
+    input::placeholder, textarea::placeholder { color: #909a96; }
+    .search input { padding-left: 40px; }
+    .tool-row select { width: 160px; }
+
+    .data-list { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+    .data-head, .data-row { display: grid; gap: 14px; align-items: center; }
+    .apps-head, .app-row { grid-template-columns: minmax(220px, 1.65fr) minmax(120px,.75fr) 110px 105px 68px; }
+    .contacts-head, .contact-row { grid-template-columns: minmax(190px, 1.4fr) minmax(130px,.85fr) 115px 118px 68px; }
+    .data-head { padding: 11px 17px; background: #eef1ec; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-size: 10px; font-weight: 700; }
+    .data-row { padding: 15px 17px; border-top: 1px solid var(--line); }
+    .data-row:first-of-type { border-top: 0; }
+    .data-row:hover { background: #fbfcfa; }
+    .primary-cell { min-width: 0; }
+    .primary-cell strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+    .primary-cell span { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cell { min-width: 0; color: #44504c; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .row-actions { display: flex; justify-content: flex-end; gap: 3px; }
+    .row-actions button { width: 30px; height: 30px; padding: 0; border: 0; background: transparent; border-radius: 8px; color: var(--muted); cursor: pointer; display: grid; place-items: center; }
+    .row-actions button:hover { background: var(--surface-2); color: var(--ink); }
+    .row-actions .icon { width: 16px; height: 16px; }
+    .status { display: inline-flex; max-width: 100%; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+    .status.saved { color: #52605c; background: #e8ebe7; }
+    .status.applied { color: #245775; background: var(--blue-soft); }
+    .status.screen, .status.interview { color: #7d5204; background: var(--gold-soft); }
+    .status.offer { color: #0b685e; background: var(--teal-soft); }
+    .status.rejected { color: #9a412f; background: var(--coral-soft); }
+    .status.withdrawn { color: #635d67; background: #ece8ee; }
+
+    .analysis-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(260px, .8fr); gap: 16px; }
+    .analysis-stack { display: grid; gap: 16px; }
+    .insight-card { padding: 23px; color: white; background: var(--deep); border-radius: var(--r-lg); }
+    .insight-card .eyebrow { color: var(--teal-bright); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .insight-card h2 { margin: 12px 0 8px; font-family: "Newsreader", serif; font-size: 28px; line-height: 1.08; }
+    .insight-card p { margin: 0; color: #b9cbc6; font-size: 13px; line-height: 1.55; }
+    .reason-list { display: grid; gap: 14px; }
+    .reason-line { display: grid; grid-template-columns: minmax(120px, 1fr) 42px; gap: 10px; align-items: center; }
+    .reason-copy { min-width: 0; }
+    .reason-copy > div:first-child { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; font-size: 12px; }
+    .reason-copy span:last-child { color: var(--muted); }
+    .reason-count { text-align: right; font-family: "Newsreader", serif; font-size: 22px; }
+    .rejection-feed { display: grid; gap: 10px; }
+    .rejection-item { padding: 14px 0; border-top: 1px solid var(--line); }
+    .rejection-item:first-child { border-top: 0; }
+    .rejection-item-top { display: flex; justify-content: space-between; gap: 12px; }
+    .rejection-item strong { font-size: 13px; }
+    .rejection-item time { color: var(--muted); font-size: 11px; white-space: nowrap; }
+    .rejection-item p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    dialog { width: min(600px, calc(100vw - 32px)); max-height: calc(100vh - 32px); border: 0; border-radius: 22px; padding: 0; color: var(--ink); background: white; box-shadow: 0 30px 100px rgba(8, 20, 17, .25); overflow: auto; }
+    dialog::backdrop { background: rgba(10, 20, 18, .58); }
+    .modal-head { position: sticky; top: 0; z-index: 2; background: white; padding: 22px 24px 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid var(--line); }
+    .modal-head h2 { margin: 0; font-family: "Newsreader", serif; font-size: 26px; }
+    .close-btn { width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--surface-2); cursor: pointer; display: grid; place-items: center; }
+    .modal-body { padding: 21px 24px 25px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 15px; }
+    .field { display: grid; gap: 7px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { color: #4d5955; font-size: 12px; font-weight: 700; }
+    textarea { min-height: 88px; resize: vertical; }
+    .modal-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 23px; }
+    .modal-foot-right { display: flex; gap: 9px; margin-left: auto; }
+    .confirm-copy { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 99; max-width: min(380px, calc(100vw - 32px)); padding: 13px 16px; border-radius: 10px; background: var(--deep); color: white; box-shadow: var(--shadow); font-size: 13px; transform: translateY(20px); opacity: 0; pointer-events: none; transition: .22s ease; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .mobile-nav { display: none; }
+
+    @media (max-width: 980px) {
+      .app-shell { grid-template-columns: 82px minmax(0,1fr); }
+      .sidebar { padding-inline: 12px; }
+      .sidebar-intro { padding-inline: 4px; text-align: center; }
+      .sidebar-intro strong { font-size: 18px; }
+      .sidebar-intro span, .nav-btn .nav-label, .side-note { display: none; }
+      .nav-btn { justify-content: center; padding-inline: 8px; }
+      .nav-count { position: absolute; margin: -26px 0 0 28px; }
+      .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      body { padding-bottom: 74px; }
+      .app-shell { display: block; }
+      .sidebar { display: none; }
+      .main { padding: 18px 16px 34px; }
+      .topbar { align-items: flex-start; margin-bottom: 29px; }
+      .session-note { max-width: 170px; line-height: 1.35; }
+      .top-actions .btn span { display: none; }
+      .top-actions .btn { width: 42px; padding: 0; }
+      .view-heading { align-items: flex-start; }
+      .view-heading h1 { font-size: 38px; }
+      .view-heading p { font-size: 13px; }
+      .view-heading > .btn { width: 42px; padding: 0; }
+      .view-heading > .btn span { display: none; }
+      .stats { gap: 9px; }
+      .stat { min-height: 104px; padding: 15px; }
+      .stat-value { font-size: 30px; }
+      .dashboard-grid, .analysis-grid { grid-template-columns: 1fr; }
+      .tool-row { align-items: stretch; flex-wrap: wrap; }
+      .tool-row .search { flex: 1 1 100%; }
+      .tool-row select { flex: 1; width: auto; min-width: 0; }
+      .data-list { border: 0; background: transparent; overflow: visible; }
+      .data-head { display: none; }
+      .data-row, .apps-head, .app-row, .contacts-head, .contact-row { grid-template-columns: 1fr auto; }
+      .data-row { position: relative; margin-bottom: 10px; padding: 15px; border: 1px solid var(--line) !important; border-radius: 13px; background: var(--surface); gap: 10px; }
+      .data-row .primary-cell { grid-column: 1; grid-row: 1; padding-right: 6px; }
+      .data-row .cell { grid-column: 1; white-space: normal; }
+      .data-row .cell[data-label]::before { content: attr(data-label) ": "; color: var(--muted); font-weight: 600; }
+      .data-row .status-cell { grid-column: 1; }
+      .data-row .row-actions { grid-column: 2; grid-row: 1 / span 4; align-self: start; flex-direction: column; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .mobile-nav { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; height: 68px; padding: 7px max(8px, env(safe-area-inset-right)) max(7px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); background: rgba(23,38,35,.98); color: white; display: grid; grid-template-columns: repeat(4,1fr); }
+      .mobile-nav .nav-btn { padding: 5px 2px; gap: 2px; flex-direction: column; border-radius: 8px; font-size: 10px; font-weight: 500; color: #b8c7c3; }
+      .mobile-nav .nav-btn.active { background: transparent; color: var(--teal-bright); }
+      .mobile-nav .nav-btn .icon { width: 20px; height: 20px; }
+      .mobile-nav .nav-count { display: none; }
+      .toast { bottom: 84px; right: 16px; }
+    }
+
+    @media (max-width: 430px) {
+      .session-note { font-size: 11px; max-width: 140px; }
+      .view-heading h1 { font-size: 34px; }
+      .stat-foot { display: none; }
+      .stat { min-height: 88px; }
+      .panel-header, .panel-body { padding-left: 17px; padding-right: 17px; }
+      .modal-head, .modal-body { padding-left: 18px; padding-right: 18px; }
+      .modal-foot { flex-direction: column; }
+      .modal-foot-right { width: 100%; margin: 0; }
+      .modal-foot-right .btn { flex: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Workspace navigation">
+      <div class="sidebar-intro"><strong>Job search</strong><span>Your working board</span></div>
+      <nav class="nav">
+        <button class="nav-btn active" data-view="dashboard"><svg class="icon" viewBox="0 0 24 24"><path d="M4 13h6V4H4zM14 20h6V11h-6zM4 20h6v-3H4zM14 7h6V4h-6z"/></svg><span class="nav-label">Dashboard</span></button>
+        <button class="nav-btn" data-view="applications"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v2h4v-2"/></svg><span class="nav-label">Applications</span><span class="nav-count" id="appNavCount">0</span></button>
+        <button class="nav-btn" data-view="networking"><svg class="icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6"/></svg><span class="nav-label">Networking</span><span class="nav-count" id="contactNavCount">0</span></button>
+        <button class="nav-btn" data-view="analysis"><svg class="icon" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="nav-label">Rejection insights</span></button>
+      </nav>
+      <div class="side-note"><strong>Keep your work.</strong><br />Download a backup before you close this tab, then import it next time.</div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="session-note"><span class="session-dot"></span><span>Session workspace · download before closing</span></div>
+        <div class="top-actions">
+          <label class="btn" for="importFile" title="Import workspace"><svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span>Import</span></label>
+          <input class="file-input" id="importFile" type="file" accept="application/json,.json" />
+          <button class="btn dark" id="exportBtn"><svg class="icon" viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5M5 21h14"/></svg><span>Download backup</span></button>
+        </div>
+      </div>
+
+      <section class="view active" id="view-dashboard">
+        <div class="view-heading">
+          <div><h1>Your search, under control.</h1><p>See the pipeline, follow the relationships, and learn from every outcome.</p></div>
+          <button class="btn primary" data-open="application"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Add application</span></button>
+        </div>
+        <div class="stats">
+          <article class="stat"><div class="stat-label">Active applications</div><div class="stat-value" id="activeStat">0</div><div class="stat-foot">Applied through interview</div></article>
+          <article class="stat"><div class="stat-label">Interviews</div><div class="stat-value" id="interviewStat">0</div><div class="stat-foot">Screening + interview</div></article>
+          <article class="stat"><div class="stat-label">Warm contacts</div><div class="stat-value" id="warmStat">0</div><div class="stat-foot">Replies and conversations</div></article>
+          <article class="stat"><div class="stat-label">Response rate</div><div class="stat-value" id="responseStat">—</div><div class="stat-foot">Movement after applying</div></article>
+        </div>
+        <div class="dashboard-grid">
+          <section class="panel">
+            <div class="panel-header"><div><h2>What needs attention</h2><p>Small moves that keep momentum alive</p></div></div>
+            <div class="panel-body" id="attentionPanel"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-header"><div><h2>Pipeline</h2><p>Applications by stage</p></div></div>
+            <div class="panel-body"><div class="pipeline" id="pipeline"></div></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-applications">
+        <div class="view-heading">
+          <div><h1>Applications</h1><p>Every opportunity, its current stage, and the next move.</p></div>
+          <button class="btn primary" data-open="application"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Add application</span></button>
+        </div>
+        <div class="tool-row">
+          <div class="search"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="appSearch" aria-label="Search applications" placeholder="Search role or company" /></div>
+          <select id="appFilter" aria-label="Filter application stage"><option value="all">All stages</option><option>Saved</option><option>Applied</option><option>Screen</option><option>Interview</option><option>Offer</option><option>Rejected</option><option>Withdrawn</option></select>
+          <button class="btn" id="csvBtn"><svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>CSV</button>
+        </div>
+        <div class="data-list" id="applicationsList"></div>
+      </section>
+
+      <section class="view" id="view-networking">
+        <div class="view-heading">
+          <div><h1>Networking</h1><p>Turn names into conversations, and conversations into context.</p></div>
+          <button class="btn primary" data-open="contact"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Add contact</span></button>
+        </div>
+        <div class="tool-row">
+          <div class="search"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="contactSearch" aria-label="Search contacts" placeholder="Search name or company" /></div>
+          <select id="contactFilter" aria-label="Filter contact status"><option value="all">All statuses</option><option>To contact</option><option>Reached out</option><option>Replied</option><option>Conversation</option><option>Referral</option></select>
+        </div>
+        <div class="data-list" id="contactsList"></div>
+      </section>
+
+      <section class="view" id="view-analysis">
+        <div class="view-heading">
+          <div><h1>Rejection insights</h1><p>Log what happened. Look for patterns. Change the next attempt.</p></div>
+          <button class="btn primary" data-open="rejection"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Log outcome</span></button>
+        </div>
+        <div class="stats">
+          <article class="stat"><div class="stat-label">Outcomes logged</div><div class="stat-value" id="rejectionStat">0</div><div class="stat-foot">Structured learning points</div></article>
+          <article class="stat"><div class="stat-label">Resume-stage</div><div class="stat-value" id="resumeRejectStat">0</div><div class="stat-foot">Before a recruiter screen</div></article>
+          <article class="stat"><div class="stat-label">Interview-stage</div><div class="stat-value" id="interviewRejectStat">0</div><div class="stat-foot">Screen or later</div></article>
+          <article class="stat"><div class="stat-label">Most common</div><div class="stat-value" id="topReasonStat" style="font-size:23px;line-height:1.08">—</div><div class="stat-foot">Reason category</div></article>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-stack">
+            <section class="insight-card" id="insightCard"></section>
+            <section class="panel">
+              <div class="panel-header"><div><h2>Reason patterns</h2><p>Count of logged outcomes</p></div></div>
+              <div class="panel-body" id="reasonPanel"></div>
+            </section>
+          </div>
+          <section class="panel">
+            <div class="panel-header"><div><h2>Outcome notes</h2><p>Your evidence, in one place</p></div></div>
+            <div class="panel-body" id="rejectionFeed"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <button class="nav-btn active" data-view="dashboard"><svg class="icon" viewBox="0 0 24 24"><path d="M4 13h6V4H4zM14 20h6V11h-6zM4 20h6v-3H4zM14 7h6V4h-6z"/></svg><span class="nav-label">Home</span></button>
+    <button class="nav-btn" data-view="applications"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></svg><span class="nav-label">Applications</span></button>
+    <button class="nav-btn" data-view="networking"><svg class="icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6"/></svg><span class="nav-label">Network</span></button>
+    <button class="nav-btn" data-view="analysis"><svg class="icon" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="nav-label">Insights</span></button>
+  </nav>
+
+  <dialog id="applicationDialog">
+    <form id="applicationForm">
+      <div class="modal-head"><h2 id="applicationDialogTitle">Add application</h2><button class="close-btn" type="button" data-close aria-label="Close"><svg class="icon" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="modal-body">
+        <input type="hidden" name="id" />
+        <div class="form-grid">
+          <div class="field"><label for="company">Company *</label><input id="company" name="company" required autocomplete="organization" /></div>
+          <div class="field"><label for="role">Role *</label><input id="role" name="role" required /></div>
+          <div class="field"><label for="stage">Stage</label><select id="stage" name="stage"><option>Saved</option><option>Applied</option><option>Screen</option><option>Interview</option><option>Offer</option><option>Rejected</option><option>Withdrawn</option></select></div>
+          <div class="field"><label for="appliedDate">Applied date</label><input id="appliedDate" name="appliedDate" type="date" /></div>
+          <div class="field"><label for="location">Location</label><input id="location" name="location" placeholder="San Francisco / Remote" /></div>
+          <div class="field"><label for="source">Source</label><input id="source" name="source" placeholder="Referral, LinkedIn, company site" /></div>
+          <div class="field full"><label for="jobUrl">Job link</label><input id="jobUrl" name="jobUrl" type="url" placeholder="https://" /></div>
+          <div class="field full"><label for="nextStep">Next step</label><input id="nextStep" name="nextStep" placeholder="Follow up Friday, prepare case study…" /></div>
+          <div class="field full"><label for="appNotes">Notes</label><textarea id="appNotes" name="notes" placeholder="Recruiter name, interview context, key details…"></textarea></div>
+        </div>
+        <div class="modal-foot"><button class="btn danger small" id="deleteApplicationBtn" type="button" hidden>Delete</button><div class="modal-foot-right"><button class="btn ghost" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Save application</button></div></div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="contactDialog">
+    <form id="contactForm">
+      <div class="modal-head"><h2 id="contactDialogTitle">Add contact</h2><button class="close-btn" type="button" data-close aria-label="Close"><svg class="icon" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="modal-body">
+        <input type="hidden" name="id" />
+        <div class="form-grid">
+          <div class="field"><label for="contactName">Name *</label><input id="contactName" name="name" required autocomplete="name" /></div>
+          <div class="field"><label for="contactCompany">Company</label><input id="contactCompany" name="company" autocomplete="organization" /></div>
+          <div class="field"><label for="contactRole">Role</label><input id="contactRole" name="role" /></div>
+          <div class="field"><label for="relationship">Relationship</label><select id="relationship" name="relationship"><option>Recruiter</option><option>Hiring manager</option><option>Employee</option><option>Alumni</option><option>Referral</option><option>Other</option></select></div>
+          <div class="field"><label for="contactStatus">Status</label><select id="contactStatus" name="status"><option>To contact</option><option>Reached out</option><option>Replied</option><option>Conversation</option><option>Referral</option></select></div>
+          <div class="field"><label for="followUp">Follow-up date</label><input id="followUp" name="followUp" type="date" /></div>
+          <div class="field full"><label for="linkedinUrl">LinkedIn profile</label><input id="linkedinUrl" name="linkedinUrl" type="url" placeholder="Paste profile link" /></div>
+          <div class="field full"><label for="contactApplication">Related application</label><select id="contactApplication" name="applicationId"><option value="">None</option></select></div>
+          <div class="field full"><label for="contactNotes">Conversation notes</label><textarea id="contactNotes" name="notes" placeholder="What you discussed and what to do next…"></textarea></div>
+        </div>
+        <div class="modal-foot"><button class="btn danger small" id="deleteContactBtn" type="button" hidden>Delete</button><div class="modal-foot-right"><button class="btn ghost" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Save contact</button></div></div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="rejectionDialog">
+    <form id="rejectionForm">
+      <div class="modal-head"><h2>Log an outcome</h2><button class="close-btn" type="button" data-close aria-label="Close"><svg class="icon" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="field full"><label for="rejectionApplication">Application *</label><select id="rejectionApplication" name="applicationId" required><option value="">Choose an application</option></select></div>
+          <div class="field"><label for="furthestStage">Furthest stage</label><select id="furthestStage" name="furthestStage"><option>Resume review</option><option>Recruiter screen</option><option>Hiring manager</option><option>Technical / case</option><option>Panel interview</option><option>Final round</option></select></div>
+          <div class="field"><label for="reason">Reason category</label><select id="reason" name="reason"><option>No feedback</option><option>Experience fit</option><option>Skills gap</option><option>Interview performance</option><option>Competition</option><option>Role closed</option><option>Compensation / location</option><option>Other</option></select></div>
+          <div class="field"><label for="outcomeDate">Outcome date</label><input id="outcomeDate" name="date" type="date" /></div>
+          <div class="field"><label for="feedbackSource">Feedback source</label><select id="feedbackSource" name="source"><option>Employer feedback</option><option>My assessment</option><option>No feedback</option></select></div>
+          <div class="field full"><label for="learning">What will you test next?</label><textarea id="learning" name="learning" placeholder="A concrete change for the next application or interview…"></textarea></div>
+        </div>
+        <div class="modal-foot"><div class="modal-foot-right"><button class="btn ghost" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Add to analysis</button></div></div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirmDialog">
+    <div class="modal-head"><h2>Remove this item?</h2><button class="close-btn" type="button" data-close aria-label="Close"><svg class="icon" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+    <div class="modal-body"><p class="confirm-copy" id="confirmCopy">This removes it from the current workspace.</p><div class="modal-foot"><div class="modal-foot-right"><button class="btn ghost" type="button" data-close>Keep it</button><button class="btn danger" id="confirmDeleteBtn" type="button">Remove</button></div></div></div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const state = { applications: [], contacts: [], rejections: [], meta: { version: 1, exportedAt: null } };
+    let pendingDelete = null;
+    const $ = (s, root=document) => root.querySelector(s);
+    const $$ = (s, root=document) => [...root.querySelectorAll(s)];
+    const escapeHtml = (v='') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
+    const today = () => new Date().toISOString().slice(0,10);
+    const daysAgo = value => value ? Math.floor((new Date().setHours(0,0,0,0) - new Date(value + 'T00:00:00')) / 86400000) : 0;
+    const formatDate = value => value ? new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric'}).format(new Date(value+'T00:00:00')) : 'Not set';
+    const statusClass = s => String(s || '').toLowerCase().replace(/\s+/g,'-');
+
+    function showToast(message) {
+      const toast = $('#toast'); toast.textContent = message; toast.classList.add('show');
+      clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
+    function switchView(name) {
+      $$('.view').forEach(v => v.classList.toggle('active', v.id === `view-${name}`));
+      $$('.nav-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+      window.scrollTo({top:0, behavior:'smooth'});
+      if (name === 'analysis') renderAnalysis();
+    }
+
+    $$('.nav-btn[data-view]').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
+    $$('[data-close]').forEach(btn => btn.addEventListener('click', () => btn.closest('dialog').close()));
+
+    function appOptions(selected='') {
+      return '<option value="">None</option>' + state.applications.map(a => `<option value="${a.id}" ${a.id===selected?'selected':''}>${escapeHtml(a.company)} — ${escapeHtml(a.role)}</option>`).join('');
+    }
+
+    function openApplication(id='') {
+      const form = $('#applicationForm'); form.reset();
+      form.elements.id.value = '';
+      form.elements.stage.value = 'Applied';
+      form.elements.appliedDate.value = today();
+      $('#applicationDialogTitle').textContent = 'Add application';
+      $('#deleteApplicationBtn').hidden = true;
+      if (id) {
+        const item = state.applications.find(a => a.id === id); if (!item) return;
+        Object.entries(item).forEach(([k,v]) => { if (form.elements[k]) form.elements[k].value = v || ''; });
+        $('#applicationDialogTitle').textContent = 'Edit application';
+        $('#deleteApplicationBtn').hidden = false;
+      }
+      $('#applicationDialog').showModal();
+    }
+
+    function openContact(id='') {
+      const form = $('#contactForm'); form.reset(); form.elements.id.value = '';
+      form.elements.status.value = 'To contact';
+      $('#contactApplication').innerHTML = appOptions();
+      $('#contactDialogTitle').textContent = 'Add contact';
+      $('#deleteContactBtn').hidden = true;
+      if (id) {
+        const item = state.contacts.find(c => c.id === id); if (!item) return;
+        $('#contactApplication').innerHTML = appOptions(item.applicationId);
+        Object.entries(item).forEach(([k,v]) => { if (form.elements[k]) form.elements[k].value = v || ''; });
+        $('#contactDialogTitle').textContent = 'Edit contact';
+        $('#deleteContactBtn').hidden = false;
+      }
+      $('#contactDialog').showModal();
+    }
+
+    function openRejection(appId='') {
+      if (!state.applications.length) { showToast('Add an application first, then log its outcome.'); switchView('applications'); return; }
+      const form = $('#rejectionForm'); form.reset();
+      $('#rejectionApplication').innerHTML = '<option value="">Choose an application</option>' + appOptions(appId).replace('<option value="">None</option>','');
+      form.elements.date.value = today();
+      if (appId) form.elements.applicationId.value = appId;
+      $('#rejectionDialog').showModal();
+    }
+
+    $$('[data-open]').forEach(btn => btn.addEventListener('click', () => {
+      if (btn.dataset.open === 'application') openApplication();
+      if (btn.dataset.open === 'contact') openContact();
+      if (btn.dataset.open === 'rejection') openRejection();
+    }));
+
+    $('#applicationForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.currentTarget));
+      if (data.id) {
+        const i = state.applications.findIndex(a => a.id === data.id);
+        state.applications[i] = {...state.applications[i], ...data, updatedAt: new Date().toISOString()};
+        showToast('Application updated.');
+      } else {
+        state.applications.unshift({...data, id: uid(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()});
+        showToast('Application added.');
+      }
+      $('#applicationDialog').close(); renderAll();
+    });
+
+    $('#contactForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.currentTarget));
+      if (data.id) {
+        const i = state.contacts.findIndex(c => c.id === data.id);
+        state.contacts[i] = {...state.contacts[i], ...data, updatedAt: new Date().toISOString()};
+        showToast('Contact updated.');
+      } else {
+        state.contacts.unshift({...data, id: uid(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()});
+        showToast('Contact added.');
+      }
+      $('#contactDialog').close(); renderAll();
+    });
+
+    $('#rejectionForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.currentTarget));
+      const existing = state.rejections.findIndex(r => r.applicationId === data.applicationId);
+      const record = {...data, id: existing >= 0 ? state.rejections[existing].id : uid(), createdAt: new Date().toISOString()};
+      if (existing >= 0) state.rejections[existing] = record; else state.rejections.unshift(record);
+      const app = state.applications.find(a => a.id === data.applicationId); if (app) app.stage = 'Rejected';
+      $('#rejectionDialog').close(); renderAll(); showToast(existing >= 0 ? 'Outcome analysis updated.' : 'Outcome added to your analysis.');
+    });
+
+    function requestDelete(type, id, label) {
+      pendingDelete = {type,id};
+      $('#confirmCopy').textContent = `“${label}” will be removed from this session workspace.`;
+      $('#confirmDialog').showModal();
+    }
+    $('#deleteApplicationBtn').addEventListener('click', () => {
+      const id = $('#applicationForm').elements.id.value; const a = state.applications.find(x=>x.id===id);
+      $('#applicationDialog').close(); if (a) requestDelete('application', id, `${a.company} — ${a.role}`);
+    });
+    $('#deleteContactBtn').addEventListener('click', () => {
+      const id = $('#contactForm').elements.id.value; const c = state.contacts.find(x=>x.id===id);
+      $('#contactDialog').close(); if (c) requestDelete('contact', id, c.name);
+    });
+    $('#confirmDeleteBtn').addEventListener('click', () => {
+      if (!pendingDelete) return;
+      if (pendingDelete.type === 'application') {
+        state.applications = state.applications.filter(x=>x.id!==pendingDelete.id);
+        state.contacts.forEach(c => { if(c.applicationId===pendingDelete.id) c.applicationId=''; });
+        state.rejections = state.rejections.filter(r=>r.applicationId!==pendingDelete.id);
+      } else state.contacts = state.contacts.filter(x=>x.id!==pendingDelete.id);
+      pendingDelete = null; $('#confirmDialog').close(); renderAll(); showToast('Item removed.');
+    });
+
+    function renderApplications() {
+      const q = $('#appSearch').value.trim().toLowerCase(); const filter = $('#appFilter').value;
+      const items = state.applications.filter(a => (!q || `${a.company} ${a.role} ${a.location||''}`.toLowerCase().includes(q)) && (filter==='all' || a.stage===filter));
+      const list = $('#applicationsList');
+      if (!items.length) {
+        list.innerHTML = `<div class="empty"><div class="empty-mark"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div><h3>${state.applications.length?'No matches':'Start with one opportunity'}</h3><p>${state.applications.length?'Try another search or stage filter.':'Add a role you are considering or have already applied to.'}</p>${state.applications.length?'':'<button class="btn primary" onclick="openApplication()">Add application</button>'}</div>`; return;
+      }
+      list.innerHTML = `<div class="data-head apps-head"><span>Opportunity</span><span>Stage</span><span>Applied</span><span>Next step</span><span></span></div>` + items.map(a => `<div class="data-row app-row">
+        <div class="primary-cell"><strong>${escapeHtml(a.role)}</strong><span>${escapeHtml(a.company)}${a.location?' · '+escapeHtml(a.location):''}</span></div>
+        <div class="status-cell"><span class="status ${statusClass(a.stage)}">${escapeHtml(a.stage)}</span></div>
+        <div class="cell" data-label="Applied">${a.appliedDate?formatDate(a.appliedDate):'Not set'}</div>
+        <div class="cell" data-label="Next step">${escapeHtml(a.nextStep||'Not set')}</div>
+        <div class="row-actions">${a.jobUrl?`<a class="btn icon-only small" href="${escapeHtml(a.jobUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Open job link"><svg class="icon" viewBox="0 0 24 24"><path d="M14 3h7v7M10 14 21 3M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6"/></svg></a>`:''}<button onclick="openApplication('${a.id}')" aria-label="Edit application"><svg class="icon" viewBox="0 0 24 24"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10zM14 7l3 3"/></svg></button></div>
+      </div>`).join('');
+    }
+
+    function renderContacts() {
+      const q = $('#contactSearch').value.trim().toLowerCase(); const filter = $('#contactFilter').value;
+      const items = state.contacts.filter(c => (!q || `${c.name} ${c.company||''} ${c.role||''}`.toLowerCase().includes(q)) && (filter==='all' || c.status===filter));
+      const list = $('#contactsList');
+      if (!items.length) {
+        list.innerHTML = `<div class="empty"><div class="empty-mark"><svg class="icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6"/></svg></div><h3>${state.contacts.length?'No matches':'Build a warm path in'}</h3><p>${state.contacts.length?'Try another search or status filter.':'Add recruiters, hiring managers, alumni, and people who can help you understand the team.'}</p>${state.contacts.length?'':'<button class="btn primary" onclick="openContact()">Add contact</button>'}</div>`; return;
+      }
+      list.innerHTML = `<div class="data-head contacts-head"><span>Contact</span><span>Relationship</span><span>Status</span><span>Follow-up</span><span></span></div>` + items.map(c => `<div class="data-row contact-row">
+        <div class="primary-cell"><strong>${escapeHtml(c.name)}</strong><span>${escapeHtml(c.role||'Role not set')}${c.company?' · '+escapeHtml(c.company):''}</span></div>
+        <div class="cell" data-label="Relationship">${escapeHtml(c.relationship||'Not set')}</div>
+        <div class="status-cell"><span class="status ${['Replied','Conversation','Referral'].includes(c.status)?'offer':c.status==='Reached out'?'applied':'saved'}">${escapeHtml(c.status)}</span></div>
+        <div class="cell" data-label="Follow-up">${c.followUp?formatDate(c.followUp):'Not set'}</div>
+        <div class="row-actions">${c.linkedinUrl?`<a class="btn icon-only small" href="${escapeHtml(c.linkedinUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Open LinkedIn profile"><svg class="icon" viewBox="0 0 24 24"><path d="M14 3h7v7M10 14 21 3M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6"/></svg></a>`:''}<button onclick="openContact('${c.id}')" aria-label="Edit contact"><svg class="icon" viewBox="0 0 24 24"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10zM14 7l3 3"/></svg></button></div>
+      </div>`).join('');
+    }
+
+    function renderDashboard() {
+      const activeStages = ['Applied','Screen','Interview'];
+      const active = state.applications.filter(a=>activeStages.includes(a.stage)).length;
+      const interviews = state.applications.filter(a=>['Screen','Interview'].includes(a.stage)).length;
+      const warm = state.contacts.filter(c=>['Replied','Conversation','Referral'].includes(c.status)).length;
+      const applied = state.applications.filter(a=>a.stage!=='Saved').length;
+      const responses = state.applications.filter(a=>['Screen','Interview','Offer','Rejected','Withdrawn'].includes(a.stage)).length;
+      $('#activeStat').textContent = active; $('#interviewStat').textContent = interviews; $('#warmStat').textContent = warm; $('#responseStat').textContent = applied ? Math.round(responses/applied*100)+'%' : '—';
+      $('#appNavCount').textContent = state.applications.length; $('#contactNavCount').textContent = state.contacts.length;
+
+      const stages = ['Saved','Applied','Screen','Interview','Offer'];
+      const counts = Object.fromEntries(stages.map(s=>[s,state.applications.filter(a=>a.stage===s).length]));
+      const max = Math.max(1,...Object.values(counts));
+      $('#pipeline').innerHTML = stages.map(s=>`<div class="pipeline-row"><span>${s}</span><div class="bar-track"><div class="bar" style="width:${counts[s]/max*100}%"></div></div><span>${counts[s]}</span></div>`).join('');
+
+      const overdue = state.contacts.filter(c=>c.followUp && c.followUp < today() && !['Referral'].includes(c.status));
+      const stale = state.applications.filter(a=>['Applied','Screen','Interview'].includes(a.stage) && a.appliedDate && daysAgo(a.appliedDate)>=14);
+      const rejectedUnlogged = state.applications.filter(a=>a.stage==='Rejected' && !state.rejections.some(r=>r.applicationId===a.id));
+      const items = [];
+      overdue.slice(0,2).forEach(c=>items.push({icon:'user',title:`Follow up with ${c.name}`,sub:`${formatDate(c.followUp)} · ${c.company||'Contact'}`,action:`openContact('${c.id}')`}));
+      stale.slice(0,2).forEach(a=>items.push({icon:'clock',title:`Check in on ${a.company}`,sub:`${a.role} · ${daysAgo(a.appliedDate)} days since applying`,action:`openApplication('${a.id}')`}));
+      rejectedUnlogged.slice(0,2).forEach(a=>items.push({icon:'chart',title:`Turn ${a.company} into a learning`,sub:`Log the stage, reason, and what you will test next`,action:`openRejection('${a.id}')`}));
+      const panel = $('#attentionPanel');
+      if (!state.applications.length && !state.contacts.length) panel.innerHTML = `<div class="empty"><div class="empty-mark"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><h3>Build your first move</h3><p>Add an application, then connect people and outcomes to it as the search unfolds.</p><button class="btn primary" onclick="openApplication()">Add application</button></div>`;
+      else if (!items.length) panel.innerHTML = `<div class="empty"><div class="empty-mark"><svg class="icon" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></div><h3>Nothing urgent</h3><p>Your follow-ups and outcome notes are up to date.</p><button class="btn" onclick="openContact()">Add a networking contact</button></div>`;
+      else panel.innerHTML = `<div class="attention-list">${items.map(i=>`<div class="attention"><div class="attention-icon"><svg class="icon" viewBox="0 0 24 24">${i.icon==='clock'?'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>':i.icon==='user'?'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>':'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'}</svg></div><div><strong>${escapeHtml(i.title)}</strong><span>${escapeHtml(i.sub)}</span></div><button class="mini-action" onclick="${i.action}">Open</button></div>`).join('')}</div>`;
+    }
+
+    function renderAnalysis() {
+      const r = state.rejections;
+      $('#rejectionStat').textContent = r.length;
+      $('#resumeRejectStat').textContent = r.filter(x=>x.furthestStage==='Resume review').length;
+      $('#interviewRejectStat').textContent = r.filter(x=>x.furthestStage!=='Resume review').length;
+      const reasons = {}; r.forEach(x=>reasons[x.reason]=(reasons[x.reason]||0)+1);
+      const sorted = Object.entries(reasons).sort((a,b)=>b[1]-a[1]); const top = sorted[0];
+      $('#topReasonStat').textContent = top ? top[0] : '—';
+      let headline = 'Start collecting evidence, not self-judgment.';
+      let body = 'Log an outcome with its furthest stage and the reason you received or inferred. Patterns become useful after a few entries.';
+      if (r.length >= 2) {
+        const resumeCount = r.filter(x=>x.furthestStage==='Resume review').length;
+        if (resumeCount / r.length >= .5) { headline = 'The biggest leverage may be before the interview.'; body = 'Most logged outcomes happen at resume review. Test tighter role targeting, clearer impact bullets, and stronger keyword alignment before changing interview prep.'; }
+        else { headline = 'Your resume is opening doors. Focus on conversion.'; body = 'Most logged outcomes happen after the resume screen. Review examples, answer structure, and role-specific evidence from the latest conversations.'; }
+      }
+      $('#insightCard').innerHTML = `<div class="eyebrow">Pattern read</div><h2>${headline}</h2><p>${body}</p>`;
+      const reasonPanel = $('#reasonPanel');
+      if (!r.length) reasonPanel.innerHTML = `<div class="empty"><h3>No patterns yet</h3><p>Log a rejected or closed outcome to begin.</p><button class="btn" onclick="openRejection()">Log outcome</button></div>`;
+      else { const max = Math.max(...sorted.map(x=>x[1])); reasonPanel.innerHTML = `<div class="reason-list">${sorted.map(([name,count])=>`<div class="reason-line"><div class="reason-copy"><div><span>${escapeHtml(name)}</span><span>${Math.round(count/r.length*100)}%</span></div><div class="bar-track"><div class="bar" style="width:${count/max*100}%;background:var(--coral)"></div></div></div><div class="reason-count">${count}</div></div>`).join('')}</div>`; }
+      const feed = $('#rejectionFeed');
+      if (!r.length) feed.innerHTML = `<div class="empty"><p>Your outcome notes will appear here.</p></div>`;
+      else feed.innerHTML = `<div class="rejection-feed">${r.map(x=>{ const a=state.applications.find(y=>y.id===x.applicationId); return `<article class="rejection-item"><div class="rejection-item-top"><strong>${escapeHtml(a?`${a.company} — ${a.role}`:'Removed application')}</strong><time>${formatDate(x.date)}</time></div><p>${escapeHtml(x.furthestStage)} · ${escapeHtml(x.reason)}${x.learning?`<br>${escapeHtml(x.learning)}`:''}</p></article>`}).join('')}</div>`;
+    }
+
+    function renderAll() { renderDashboard(); renderApplications(); renderContacts(); renderAnalysis(); }
+    $('#appSearch').addEventListener('input', renderApplications); $('#appFilter').addEventListener('change', renderApplications);
+    $('#contactSearch').addEventListener('input', renderContacts); $('#contactFilter').addEventListener('change', renderContacts);
+
+    function downloadFile(content, filename, type) {
+      const blob = new Blob([content], {type}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),500);
+    }
+    $('#exportBtn').addEventListener('click', () => {
+      const payload = {...state, meta:{version:1,exportedAt:new Date().toISOString()}};
+      downloadFile(JSON.stringify(payload,null,2), `job-search-workspace-${today()}.json`, 'application/json'); showToast('Workspace backup downloaded.');
+    });
+    $('#csvBtn').addEventListener('click', () => {
+      const fields=['company','role','stage','appliedDate','location','source','jobUrl','nextStep','notes'];
+      const csv=[fields.join(','),...state.applications.map(a=>fields.map(f=>`"${String(a[f]||'').replace(/"/g,'""')}"`).join(','))].join('\n');
+      downloadFile(csv,`job-applications-${today()}.csv`,'text/csv'); showToast('Applications CSV downloaded.');
+    });
+    $('#importFile').addEventListener('change', async e => {
+      const file=e.target.files[0]; if(!file)return;
+      try { const data=JSON.parse(await file.text()); if(!Array.isArray(data.applications)||!Array.isArray(data.contacts)||!Array.isArray(data.rejections)) throw new Error('Invalid'); state.applications=data.applications; state.contacts=data.contacts; state.rejections=data.rejections; renderAll(); showToast(`Imported ${state.applications.length} applications and ${state.contacts.length} contacts.`); }
+      catch { showToast('That file is not a valid workspace backup.'); }
+      e.target.value='';
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>
