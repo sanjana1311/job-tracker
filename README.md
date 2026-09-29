@@ -22,10 +22,32 @@ agent — no code written by hand.
 Your data stays in your browser session — download a backup before closing
 the tab, then import it next time.
 
-## Run it
+## Install
 
-Open `index.html` in a browser, or enable GitHub Pages on this repo
-(Settings → Pages → Deploy from branch) for a live link.
+No dependencies, no build step.
+
+```bash
+git clone https://github.com/sanjana1311/job-tracker.git
+cd job-tracker
+```
+
+## Run
+
+**Option 1 — live demo (nothing to install):**
+
+https://sanjana1311.github.io/job-tracker/
+
+**Option 2 — open the file:**
+
+Open `index.html` in any browser. Double-clicking it works.
+
+**Option 3 — local server (optional):**
+
+```bash
+python3 -m http.server 8000
+```
+
+then visit http://localhost:8000 in your browser.
 
 ## License
 
